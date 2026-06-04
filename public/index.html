@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Congress Trades | Golden Trade Tracker</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="#4ecdc4" stroke-width="2"/>
+          <path d="M12 6v6l4 2" stroke="#4ecdc4" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span class="logo-text">CongressTrades</span>
+      </div>
+    </div>
+    <nav class="header-nav">
+      <a href="#" class="nav-link active" data-view="trades">Trades</a>
+      <a href="#" class="nav-link" data-view="politicians">Politicians</a>
+      <a href="#" class="nav-link" data-view="golden">Golden Trades</a>
+    </nav>
+    <div class="header-right">
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+        </svg>
+        <input type="text" placeholder='Search, i.e. "TSLA"' id="searchInput">
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Trade Detail View (default) -->
+    <div id="tradeDetailView" class="view active">
+      <div class="trade-layout">
+        <!-- Left Panel: Politician Card -->
+        <aside class="politician-panel">
+          <div class="politician-card">
+            <img id="politicianPhoto" src="" alt="" class="politician-photo">
+            <h2 id="politicianName" class="politician-name">Ro Khanna →</h2>
+            <p id="politicianParty" class="politician-party">Democrat / CA</p>
+            
+            <div class="politician-stats">
+              <div class="stat">
+                <span id="tradeCount" class="stat-value">0</span>
+                <span class="stat-label">Trades</span>
+              </div>
+              <div class="stat">
+                <span id="chamberLabel" class="stat-value">House</span>
+                <span class="stat-label">Chamber</span>
+              </div>
+            </div>
+            
+            <div class="politician-stats">
+              <div class="stat">
+                <span id="tradeVolume" class="stat-value">$0</span>
+                <span class="stat-label">Trade Volume</span>
+              </div>
+              <div class="stat">
+                <span id="lastTradeDate" class="stat-value">-</span>
+                <span class="stat-label">Last Date Traded</span>
+              </div>
+            </div>
+
+            <div class="social-links">
+              <a href="#" id="twitterLink" target="_blank" class="social-icon">𝕏</a>
+            </div>
+          </div>
+
+          <!-- Committees Section -->
+          <div class="committees-section">
+            <div class="committees-header">
+              <h3>COMMITTEES</h3>
+            </div>
+            <div id="committeesList" class="committees-list"></div>
+          </div>
+        </aside>
+
+        <!-- Right Panel: Trade Details + Chart -->
+        <section class="trade-detail-panel">
+          <!-- Trade Header -->
+          <div class="trade-header">
+            <div class="trade-header-left">
+              <h1 id="tradeTicker" class="trade-ticker">AAPL</h1>
+              <span id="tradeCompany" class="trade-company">Apple Inc.</span>
+            </div>
+            <div class="trade-header-right">
+              <span class="trade-price-label">USD</span>
+              <span id="tradeCurrentPrice" class="trade-current-price">0.00</span>
+              <span class="trade-price-sublabel">Share price at time of transaction</span>
+            </div>
+          </div>
+          
+          <p id="tradeInfo" class="trade-info">
+            <span class="trade-type-badge purchase">Purchase</span>
+            of <span id="tradeAmount">$1,001 - $15,000</span> on <span id="tradeDateDisplay">-</span>
+          </p>
+
+          <!-- Golden Trade Banner -->
+          <div id="goldenBanner" class="golden-banner hidden">
+            <div class="golden-banner-header">
+              <h3>🏆 Golden Trade</h3>
+            </div>
+            <div class="golden-banner-content">
+              <h4>GOLDEN REASONS <span class="info-icon">ⓘ</span></h4>
+              <div id="goldenReasons" class="golden-reasons"></div>
+            </div>
+          </div>
+
+          <!-- Chart -->
+          <div class="chart-container">
+            <div id="priceChart" class="price-chart"></div>
+            <div class="chart-legend">
+              <span class="legend-item">S&P 500*</span>
+              <span class="legend-item">Dow Jones*</span>
+              <span class="legend-item">NASDAQ*</span>
+              <span class="chart-note">* Index price scaled relative to stock</span>
+            </div>
+            <div class="chart-timeframes">
+              <button class="tf-btn" data-range="5d">5D</button>
+              <button class="tf-btn" data-range="1m">1M</button>
+              <button class="tf-btn" data-range="6m">6M</button>
+              <button class="tf-btn" data-range="ytd">YTD</button>
+              <button class="tf-btn active" data-range="1y">1Y</button>
+              <button class="tf-btn" data-range="5y">5Y</button>
+            </div>
+          </div>
+
+          <!-- Performance Cards -->
+          <div class="performance-cards">
+            <div class="perf-card">
+              <span class="perf-label"><span id="perfTicker">AAPL</span> Percent Change Since Trade</span>
+              <span id="perfChange" class="perf-value positive">+0.00%</span>
+            </div>
+            <div class="perf-card">
+              <span class="perf-label">S&P 500 Percent Change Since Trade</span>
+              <span id="perfSP500" class="perf-value positive">+0.00%</span>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- Trades List View -->
+    <div id="tradesListView" class="view">
+      <div class="trades-list-header">
+        <h2>All Trades</h2>
+        <div class="trades-filters">
+          <select id="filterType">
+            <option value="">All Types</option>
+            <option value="Purchase">Purchases</option>
+            <option value="Sale">Sales</option>
+          </select>
+          <label class="golden-filter">
+            <input type="checkbox" id="filterGolden"> Golden Only 🏆
+          </label>
+        </div>
+      </div>
+      <div id="tradesTable" class="trades-table"></div>
+    </div>
+
+    <!-- Golden Trades View -->
+    <div id="goldenView" class="view">
+      <div class="golden-header">
+        <h2>🏆 Golden Trades</h2>
+        <p class="golden-description">
+          Trades where the stock's sector matches the politician's committee jurisdiction.
+          These trades may indicate potential informational advantages.
+        </p>
+      </div>
+      <div id="goldenTradesTable" class="trades-table"></div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-left">
+      <div class="logo">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="#4ecdc4" stroke-width="2"/>
+          <path d="M12 6v6l4 2" stroke="#4ecdc4" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span>CongressTrades</span>
+      </div>
+      <p class="footer-tagline">Connecting the dots, so you don't have to.</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
