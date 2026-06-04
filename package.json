@@ -1,22 +1,22 @@
 {
   "name": "congress-trades-dashboard",
-  "version": "1.0.0",
-  "description": "Local congressional stock trading dashboard with Golden Trade detection",
+  "version": "2.0.0",
+  "description": "Congressional stock trading dashboard with Golden Trade detection, Hot Stocks, Politician Scorecards, and more",
   "main": "src/server.js",
+  "type": "module",
   "scripts": {
     "start": "node src/server.js",
-    "setup": "node src/setup-db.js",
-    "seed": "node src/seed-trades.js",
-    "fetch": "node src/fetch-trades.js",
-    "update": "node src/fetch-trades.js && node src/seed-trades.js",
-    "dev": "node --watch src/server.js"
+    "dev": "node --watch src/server.js",
+    "setup": "node scripts/setup-db.js",
+    "fetch-trades": "node scripts/fetch-trades.js",
+    "fetch-prices": "node scripts/fetch-prices.js",
+    "pipeline": "node scripts/fetch-trades.js && node scripts/fetch-prices.js",
+    "full-setup": "node scripts/setup-db.js && node scripts/fetch-trades.js && node scripts/fetch-prices.js"
   },
   "dependencies": {
-    "sql.js": "^1.10.0",
     "express": "^4.18.2",
+    "sql.js": "^1.10.0",
     "node-fetch": "^3.3.2",
-    "xml2js": "^0.6.2",
-    "pdf-parse": "^1.1.1"
-  },
-  "type": "module"
+    "nodemailer": "^6.9.0"
+  }
 }
