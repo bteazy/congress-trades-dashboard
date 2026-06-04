@@ -1,133 +1,154 @@
-# 🏛️ Congressional Trades Dashboard
+# 🏛️ CongressTrades Dashboard v2.0
 
-A local, self-hosted dashboard for tracking congressional stock trades with **Golden Trade** detection. Inspired by [Altoneer](https://altoneer.com).
+Track stock trades by US Congress members. Detect Golden Trades, find Hot Stocks, compare politicians, and simulate copy-trading — all from official STOCK Act disclosures.
 
-![Dark Theme](https://img.shields.io/badge/theme-dark-1c2128)
-![Node.js](https://img.shields.io/badge/node-18+-green)
-![License](https://img.shields.io/badge/license-MIT-blue)
+## ✨ Features
 
-## Features
+### 🔥 Hot Stocks
+Stocks being bought by multiple politicians within a short timeframe. Click into any hot stock to see which politicians bought it, their 3-month returns, and Golden Trade status.
 
-- **Trade Tracking**: View all stock trades by members of Congress
-- **Golden Trade Detection**: Flags trades where the stock's sector matches the politician's committee jurisdiction
-- **Interactive Charts**: TradingView Lightweight Charts with S&P 500 comparison
-- **Performance Metrics**: % change since trade vs S&P 500
-- **Committee Mapping**: See which committees have jurisdiction over which sectors
-- **Dark Theme UI**: Minimalist design inspired by Altoneer
-- **Local-First**: All data stored locally in SQLite, no cloud dependencies
-- **Daily Updates**: Claude Cowork prompt for automated daily data pulls
+### 📊 All Trades
+Browse 5000+ trades with filters for asset type (Stocks, Options, Bonds), trade type (Buy/Sell), and Golden Trade status. Includes eToro deep links for every ticker.
 
-## Quick Start
+### 👥 Politician Scorecards
+Detailed performance cards: Win Rate, Avg Return, Best/Worst Trade, Golden Trade count, sector breakdown, and recent trades.
+
+### 📅 Timeline
+Chronological view of all trades with visual indicators for buys (green), sells (red), and golden trades (gold).
+
+### 🗺️ Sector Heatmap
+See which sectors politicians are trading most — buy/sell ratio, unique traders, and volume.
+
+### 💰 Copy-Trading Simulator
+"What if you copied every trade?" Simulates portfolio performance vs S&P 500 with configurable start capital and time period.
+
+### ⚖️ Politician Comparison
+Compare two politicians head-to-head on win rate, returns, sectors, and trade volume.
+
+### 🔔 Email Alerts
+Subscribe to get notified when top traders make moves (all trades, golden only, or hot stocks only).
+
+### 📥 Export
+Download all trade data as CSV or JSON for your own analysis.
+
+### 🌙/☀️ Dark/Light Mode
+Toggle between dark and light themes.
+
+### 🔗 eToro Deep Links
+Every ticker links directly to eToro for one-click trading.
+
+---
+
+## 🚀 Quick Start
 
 ```bash
-# 1. Install dependencies
+# Clone the repo
+git clone https://github.com/bteazy/congress-trades-dashboard.git
+cd congress-trades-dashboard
+
+# Install dependencies
 npm install
 
-# 2. Create database and seed Ro Khanna data
-npm run setup
+# Full setup: create DB + fetch trades + fetch prices
+npm run full-setup
 
-# 3. Seed known trades and fetch stock prices
-node src/seed-trades.js
-
-# 4. Start the dashboard
+# Start the dashboard
 npm start
-# → Opens at http://localhost:3847
+# → http://localhost:3847
 ```
 
-## Architecture
+## 📋 Commands
+
+| Command | Description |
+|---------|-------------|
+| `npm start` | Start the dashboard server |
+| `npm run dev` | Start with auto-reload (development) |
+| `npm run setup` | Create database and seed committees |
+| `npm run fetch-trades` | Fetch all trades from official sources |
+| `npm run fetch-prices` | Update stock prices from Yahoo Finance |
+| `npm run pipeline` | Fetch trades + update prices |
+| `npm run full-setup` | Complete setup from scratch |
+
+## 🔄 Automated Data Pipeline
+
+The app includes a GitHub Actions workflow that runs **every 6 hours** (for free!):
+1. Fetches new trades from official House/Senate disclosures
+2. Updates stock prices from Yahoo Finance
+3. Commits the updated database
+
+**Cost: $0** — GitHub Actions provides 2000 minutes/month free for public repos.
+
+## 📊 Data Sources
+
+| Source | Coverage | Cost |
+|--------|----------|------|
+| CongressInvests API | House + Senate, 365 days | Free (100 req/day) |
+| Yahoo Finance | Stock prices, 1 year history | Free (no API key) |
+| House Clerk XML | Official House disclosures | Free |
+| Senate EFD | Official Senate disclosures | Free |
+
+## 🏗️ Architecture
 
 ```
 congress-trades-dashboard/
-├── public/              # Frontend (vanilla JS, dark theme)
-│   ├── index.html       # Main HTML structure
-│   ├── styles.css       # Dark theme CSS (Altoneer-inspired)
-│   └── app.js           # Frontend logic, charts, navigation
 ├── src/
-│   ├── server.js        # Express API server (port 3847)
-│   ├── setup-db.js      # SQLite schema + seed data
-│   ├── seed-trades.js   # Pre-populate known trades + fetch prices
-│   └── fetch-trades.js  # House Clerk XML/PDF parser
+│   ├── server.js          # Express API (all endpoints)
+│   └── db.js              # SQLite database helper
+├── public/
+│   ├── index.html         # Single-page app
+│   ├── css/styles.css     # Dark/Light theme
+│   └── js/app.js          # Frontend logic
+├── scripts/
+│   ├── setup-db.js        # Database schema + seed
+│   ├── fetch-trades.js    # Trade data pipeline
+│   └── fetch-prices.js    # Price updater
 ├── data/
-│   ├── trades.db        # SQLite database (auto-created)
-│   └── cache/           # Cached XML/PDF files
-├── CLAUDE_COWORK_PROMPT.md  # Daily update automation
-├── package.json
-└── README.md
+│   └── trades.db          # SQLite database
+└── .github/workflows/
+    └── update-data.yml    # Automated pipeline (every 6h)
 ```
 
-## Data Sources
+## 🔌 API Endpoints
 
-| Source | What | Cost |
-|--------|------|------|
-| [House Clerk](https://disclosures-clerk.house.gov) | PTR filings (XML index + PDF) | Free |
-| [Yahoo Finance](https://finance.yahoo.com) | Stock prices, sector/industry | Free |
+### Trades
+- `GET /api/trades` — All trades (filterable)
+- `GET /api/hot` — Hot stocks (multiple buyers)
+- `GET /api/hot/:ticker` — Hot stock detail
+- `GET /api/timeline` — Chronological trade feed
 
-## Golden Trade Logic
+### Politicians
+- `GET /api/politicians` — All politicians
+- `GET /api/politicians/:id` — Politician detail
+- `GET /api/scorecard/:id` — Full scorecard
+- `GET /api/compare?ids=1,2` — Compare politicians
 
-A trade is flagged as "Golden" when:
+### Analysis
+- `GET /api/heatmap` — Sector heatmap
+- `GET /api/simulate` — Copy-trading simulator
+- `GET /api/chart/:ticker` — Price chart data
+- `GET /api/search?q=` — Search tickers/politicians
+- `GET /api/stats` — Dashboard statistics
 
-1. The stock belongs to a sector (e.g., "Semiconductors")
-2. The politician sits on a committee with jurisdiction over that sector
-3. → The politician may have non-public information about that industry
+### Alerts & Export
+- `POST /api/alerts/subscribe` — Subscribe to alerts
+- `GET /api/export/trades` — CSV/JSON export
 
-**Ro Khanna's Committee Jurisdictions:**
+## 🚀 Deployment
 
-| Committee | Sectors |
-|-----------|---------|
-| CITI (Ranking Member) | Technology, Cybersecurity, Software, AI, Cloud Computing, Defense IT |
-| CCP Select (Ranking Member) | Semiconductors, Telecommunications, Export Controls, Supply Chain |
-| Armed Services | Aerospace & Defense, Military Technology |
-| Oversight | Energy, Government Services |
+### Railway (recommended, ~$5/mo)
+1. Connect GitHub repo to Railway
+2. Railway auto-detects Node.js and deploys
+3. Add custom domain (optional)
 
-## API Endpoints
+### Render (~$7/mo)
+1. Connect GitHub repo to Render
+2. Set build command: `npm install`
+3. Set start command: `npm start`
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/politicians` | List all politicians |
-| GET | `/api/politicians/:id` | Politician detail + committees |
-| GET | `/api/trades` | All trades (filterable) |
-| GET | `/api/trades/:id` | Single trade detail |
-| GET | `/api/chart/:ticker` | Price history for charts |
-| GET | `/api/stats/:politician_id` | Profitability statistics |
-| POST | `/api/fetch-live-price/:ticker` | Refresh price from Yahoo |
+## ⚖️ Disclaimer
 
-**Query Parameters for `/api/trades`:**
-- `politician_id` - Filter by politician
-- `ticker` - Filter by stock ticker
-- `golden_only=1` - Only Golden Trades
-- `trade_type` - Purchase, Sale, etc.
-- `limit` / `offset` - Pagination
+This dashboard uses publicly available STOCK Act disclosure data for educational and research purposes only. This is NOT financial advice. Trade disclosures may be delayed up to 45 days. Past performance does not guarantee future results.
 
-## Daily Updates (Claude Cowork)
+## 📄 License
 
-Set up Claude Cowork to run at **15:35 daily** (after market close):
-
-```
-Check for new Ro Khanna stock trades:
-1. Run: cd ~/congress-trades-dashboard && node src/fetch-trades.js
-2. Run: node src/seed-trades.js (updates prices)
-3. Report any new trades found and their Golden Trade status
-```
-
-See `CLAUDE_COWORK_PROMPT.md` for the full prompt.
-
-## Expanding Beyond Ro Khanna
-
-To add more politicians:
-
-1. Add to `politicians` table in `setup-db.js`
-2. Add their committees and sector mappings
-3. Add their name to `TARGET_POLITICIANS` in `fetch-trades.js`
-4. Run `npm run fetch`
-
-## Tech Stack
-
-- **Backend**: Node.js, Express, better-sqlite3
-- **Frontend**: Vanilla JS, TradingView Lightweight Charts
-- **Database**: SQLite (WAL mode)
-- **Data**: House Clerk XML/PDF, Yahoo Finance API
-- **Styling**: Custom CSS (dark theme, no frameworks)
-
-## License
-
-MIT - For educational and research purposes only. Not financial advice.
+MIT
