@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Congress Trades | Golden Trade Tracker</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>CongressTrades | Track Congressional Stock Trades</title>
+  <meta name="description" content="Track stock trades by US Congress members. Golden Trade detection, Hot Stocks, Politician Scorecards, and Copy-Trading Simulator.">
+  <link rel="stylesheet" href="/css/styles.css">
   <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
 <body>
@@ -12,186 +13,203 @@
   <header class="header">
     <div class="header-left">
       <div class="logo">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="10" stroke="#4ecdc4" stroke-width="2"/>
-          <path d="M12 6v6l4 2" stroke="#4ecdc4" stroke-width="2" stroke-linecap="round"/>
-        </svg>
+        <span class="logo-icon">🏛️</span>
         <span class="logo-text">CongressTrades</span>
       </div>
     </div>
     <nav class="header-nav">
-      <a href="#" class="nav-link active" data-view="trades">Trades</a>
-      <a href="#" class="nav-link" data-view="politicians">Politicians</a>
-      <a href="#" class="nav-link" data-view="golden">Golden Trades</a>
+      <a href="#" class="nav-link active" data-view="hot">🔥 Hot</a>
+      <a href="#" class="nav-link" data-view="trades">📊 Trades</a>
+      <a href="#" class="nav-link" data-view="politicians">👥 Politicians</a>
+      <a href="#" class="nav-link" data-view="timeline">📅 Timeline</a>
+      <a href="#" class="nav-link" data-view="heatmap">🗺️ Heatmap</a>
+      <a href="#" class="nav-link" data-view="simulator">💰 Simulator</a>
     </nav>
     <div class="header-right">
       <div class="search-box">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
-        </svg>
-        <input type="text" placeholder='Search, i.e. "TSLA"' id="searchInput">
+        <input type="text" placeholder="Search ticker or politician..." id="searchInput">
+        <div id="searchResults" class="search-results hidden"></div>
       </div>
+      <button id="themeToggle" class="theme-toggle" title="Toggle theme">🌙</button>
     </div>
   </header>
 
   <!-- Main Content -->
   <main class="main-content">
-    <!-- Trade Detail View (default) -->
-    <div id="tradeDetailView" class="view active">
-      <div class="trade-layout">
-        <!-- Left Panel: Politician Card -->
-        <aside class="politician-panel">
-          <div class="politician-card">
-            <img id="politicianPhoto" src="" alt="" class="politician-photo">
-            <h2 id="politicianName" class="politician-name">Ro Khanna →</h2>
-            <p id="politicianParty" class="politician-party">Democrat / CA</p>
-            
-            <div class="politician-stats">
-              <div class="stat">
-                <span id="tradeCount" class="stat-value">0</span>
-                <span class="stat-label">Trades</span>
-              </div>
-              <div class="stat">
-                <span id="chamberLabel" class="stat-value">House</span>
-                <span class="stat-label">Chamber</span>
-              </div>
-            </div>
-            
-            <div class="politician-stats">
-              <div class="stat">
-                <span id="tradeVolume" class="stat-value">$0</span>
-                <span class="stat-label">Trade Volume</span>
-              </div>
-              <div class="stat">
-                <span id="lastTradeDate" class="stat-value">-</span>
-                <span class="stat-label">Last Date Traded</span>
-              </div>
-            </div>
 
-            <div class="social-links">
-              <a href="#" id="twitterLink" target="_blank" class="social-icon">𝕏</a>
-            </div>
-          </div>
-
-          <!-- Committees Section -->
-          <div class="committees-section">
-            <div class="committees-header">
-              <h3>COMMITTEES</h3>
-            </div>
-            <div id="committeesList" class="committees-list"></div>
-          </div>
-        </aside>
-
-        <!-- Right Panel: Trade Details + Chart -->
-        <section class="trade-detail-panel">
-          <!-- Trade Header -->
-          <div class="trade-header">
-            <div class="trade-header-left">
-              <h1 id="tradeTicker" class="trade-ticker">AAPL</h1>
-              <span id="tradeCompany" class="trade-company">Apple Inc.</span>
-            </div>
-            <div class="trade-header-right">
-              <span class="trade-price-label">USD</span>
-              <span id="tradeCurrentPrice" class="trade-current-price">0.00</span>
-              <span class="trade-price-sublabel">Share price at time of transaction</span>
-            </div>
-          </div>
-          
-          <p id="tradeInfo" class="trade-info">
-            <span class="trade-type-badge purchase">Purchase</span>
-            of <span id="tradeAmount">$1,001 - $15,000</span> on <span id="tradeDateDisplay">-</span>
-          </p>
-
-          <!-- Golden Trade Banner -->
-          <div id="goldenBanner" class="golden-banner hidden">
-            <div class="golden-banner-header">
-              <h3>🏆 Golden Trade</h3>
-            </div>
-            <div class="golden-banner-content">
-              <h4>GOLDEN REASONS <span class="info-icon">ⓘ</span></h4>
-              <div id="goldenReasons" class="golden-reasons"></div>
-            </div>
-          </div>
-
-          <!-- Chart -->
-          <div class="chart-container">
-            <div id="priceChart" class="price-chart"></div>
-            <div class="chart-legend">
-              <span class="legend-item">S&P 500*</span>
-              <span class="legend-item">Dow Jones*</span>
-              <span class="legend-item">NASDAQ*</span>
-              <span class="chart-note">* Index price scaled relative to stock</span>
-            </div>
-            <div class="chart-timeframes">
-              <button class="tf-btn" data-range="5d">5D</button>
-              <button class="tf-btn" data-range="1m">1M</button>
-              <button class="tf-btn" data-range="6m">6M</button>
-              <button class="tf-btn" data-range="ytd">YTD</button>
-              <button class="tf-btn active" data-range="1y">1Y</button>
-              <button class="tf-btn" data-range="5y">5Y</button>
-            </div>
-          </div>
-
-          <!-- Performance Cards -->
-          <div class="performance-cards">
-            <div class="perf-card">
-              <span class="perf-label"><span id="perfTicker">AAPL</span> Percent Change Since Trade</span>
-              <span id="perfChange" class="perf-value positive">+0.00%</span>
-            </div>
-            <div class="perf-card">
-              <span class="perf-label">S&P 500 Percent Change Since Trade</span>
-              <span id="perfSP500" class="perf-value positive">+0.00%</span>
-            </div>
-          </div>
-        </section>
+    <!-- HOT STOCKS VIEW -->
+    <div id="hotView" class="view active">
+      <div class="view-header">
+        <h2>🔥 Hot Stocks</h2>
+        <p class="view-description">Stocks being bought by multiple politicians within 60 days</p>
+        <div class="view-controls">
+          <select id="hotDays">
+            <option value="30">Last 30 days</option>
+            <option value="60" selected>Last 60 days</option>
+            <option value="90">Last 90 days</option>
+          </select>
+        </div>
       </div>
+      <div id="hotStocksList" class="hot-stocks-grid"></div>
     </div>
 
-    <!-- Trades List View -->
-    <div id="tradesListView" class="view">
-      <div class="trades-list-header">
-        <h2>All Trades</h2>
-        <div class="trades-filters">
-          <select id="filterType">
+    <!-- HOT STOCK DETAIL -->
+    <div id="hotDetailView" class="view">
+      <button class="back-btn" onclick="switchView('hot')">← Back to Hot Stocks</button>
+      <div id="hotDetailContent"></div>
+    </div>
+
+    <!-- TRADES VIEW -->
+    <div id="tradesView" class="view">
+      <div class="view-header">
+        <h2>📊 All Trades</h2>
+        <div class="view-controls">
+          <select id="filterAssetType">
             <option value="">All Types</option>
-            <option value="Purchase">Purchases</option>
-            <option value="Sale">Sales</option>
+            <option value="Stock">Stocks</option>
+            <option value="Stock Option">Options</option>
+            <option value="Corporate Bond">Bonds</option>
           </select>
-          <label class="golden-filter">
-            <input type="checkbox" id="filterGolden"> Golden Only 🏆
+          <select id="filterTradeType">
+            <option value="">Buy & Sell</option>
+            <option value="Purchase">Purchases only</option>
+            <option value="Sale">Sales only</option>
+          </select>
+          <label class="checkbox-label">
+            <input type="checkbox" id="filterGolden"> 🏆 Golden only
           </label>
+          <button id="exportCsv" class="btn-small">📥 Export CSV</button>
         </div>
       </div>
       <div id="tradesTable" class="trades-table"></div>
+      <div id="tradesPagination" class="pagination"></div>
     </div>
 
-    <!-- Golden Trades View -->
-    <div id="goldenView" class="view">
-      <div class="golden-header">
-        <h2>🏆 Golden Trades</h2>
-        <p class="golden-description">
-          Trades where the stock's sector matches the politician's committee jurisdiction.
-          These trades may indicate potential informational advantages.
-        </p>
+    <!-- POLITICIANS VIEW -->
+    <div id="politiciansView" class="view">
+      <div class="view-header">
+        <h2>👥 Politicians</h2>
+        <div class="view-controls">
+          <select id="filterChamber">
+            <option value="">All Chambers</option>
+            <option value="House">House</option>
+            <option value="Senate">Senate</option>
+          </select>
+          <select id="filterParty">
+            <option value="">All Parties</option>
+            <option value="D">Democrat</option>
+            <option value="R">Republican</option>
+            <option value="I">Independent</option>
+          </select>
+          <select id="sortPoliticians">
+            <option value="trades">Most Trades</option>
+            <option value="return">Best Return</option>
+            <option value="recent">Most Recent</option>
+            <option value="name">Name A-Z</option>
+          </select>
+        </div>
       </div>
-      <div id="goldenTradesTable" class="trades-table"></div>
+      <div id="politiciansList" class="politicians-grid"></div>
     </div>
+
+    <!-- POLITICIAN SCORECARD -->
+    <div id="scorecardView" class="view">
+      <button class="back-btn" onclick="switchView('politicians')">← Back to Politicians</button>
+      <div id="scorecardContent"></div>
+    </div>
+
+    <!-- COMPARE VIEW -->
+    <div id="compareView" class="view">
+      <div class="view-header">
+        <h2>⚖️ Compare Politicians</h2>
+        <p class="view-description">Select two politicians to compare their trading performance</p>
+      </div>
+      <div id="compareContent"></div>
+    </div>
+
+    <!-- TIMELINE VIEW -->
+    <div id="timelineView" class="view">
+      <div class="view-header">
+        <h2>📅 Timeline</h2>
+        <p class="view-description">Chronological view of all trades</p>
+        <div class="view-controls">
+          <select id="timelineDays">
+            <option value="7">Last 7 days</option>
+            <option value="30" selected>Last 30 days</option>
+            <option value="90">Last 90 days</option>
+          </select>
+        </div>
+      </div>
+      <div id="timelineContent" class="timeline"></div>
+    </div>
+
+    <!-- HEATMAP VIEW -->
+    <div id="heatmapView" class="view">
+      <div class="view-header">
+        <h2>🗺️ Sector Heatmap</h2>
+        <p class="view-description">Which sectors are politicians trading most</p>
+        <div class="view-controls">
+          <select id="heatmapDays">
+            <option value="7">Last 7 days</option>
+            <option value="30" selected>Last 30 days</option>
+            <option value="90">Last 90 days</option>
+          </select>
+        </div>
+      </div>
+      <div id="heatmapContent" class="heatmap-grid"></div>
+    </div>
+
+    <!-- SIMULATOR VIEW -->
+    <div id="simulatorView" class="view">
+      <div class="view-header">
+        <h2>💰 Copy-Trading Simulator</h2>
+        <p class="view-description">What if you copied every trade?</p>
+        <div class="view-controls">
+          <input type="number" id="simCapital" value="10000" min="1000" step="1000" class="input-small">
+          <label>Start Capital ($)</label>
+          <select id="simDays">
+            <option value="90">Last 90 days</option>
+            <option value="180">Last 6 months</option>
+            <option value="365" selected>Last year</option>
+          </select>
+          <select id="simPolitician">
+            <option value="">All Politicians</option>
+          </select>
+          <button id="runSimulation" class="btn-primary">Run Simulation</button>
+        </div>
+      </div>
+      <div id="simulatorResults"></div>
+    </div>
+
+    <!-- ALERTS VIEW -->
+    <div id="alertsView" class="view">
+      <div class="view-header">
+        <h2>🔔 Alerts</h2>
+        <p class="view-description">Get notified when top traders make moves</p>
+      </div>
+      <div class="alert-form">
+        <input type="email" id="alertEmail" placeholder="your@email.com" class="input-medium">
+        <select id="alertType">
+          <option value="all">All new trades</option>
+          <option value="golden">Golden trades only</option>
+          <option value="hot">Hot stocks only</option>
+        </select>
+        <button id="subscribeAlert" class="btn-primary">Subscribe</button>
+      </div>
+      <div id="alertsList"></div>
+    </div>
+
   </main>
 
   <!-- Footer -->
   <footer class="footer">
-    <div class="footer-left">
-      <div class="logo">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="10" stroke="#4ecdc4" stroke-width="2"/>
-          <path d="M12 6v6l4 2" stroke="#4ecdc4" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-        <span>CongressTrades</span>
-      </div>
-      <p class="footer-tagline">Connecting the dots, so you don't have to.</p>
+    <div class="footer-content">
+      <span>🏛️ CongressTrades v2.0</span>
+      <span>Data from official STOCK Act disclosures</span>
+      <span>Not financial advice</span>
     </div>
   </footer>
 
-  <script src="app.js"></script>
+  <script src="/js/app.js"></script>
 </body>
 </html>
